@@ -4,6 +4,7 @@ use warnings;
 use Data::Dumper;
 use Getopt::Std;
 use File::Spec;
+use File::Basename;
 use Time::Piece;
 use POSIX;
 
@@ -55,7 +56,7 @@ if ($opts{o}) {
     foreach my $file (@files) {
         $i++;
 
-        my $file_unix_time = (stat(File::Spec->catfile($opts{s}, $file)))[9];
+        my $file_unix_time = (stat($file))[9];
 
         print "$i of $total - $file";
 
@@ -67,8 +68,11 @@ if ($opts{o}) {
         if ($file_unix_time <= $relative_unix_time) {
             my $exec_string = sprintf(
                 "mv \"%s\" \"%s\"",
-                File::Spec->catfile($opts{s}, $file),
-                File::Spec->catfile($opts{d}, $file)
+                $file,
+                File::Spec->catfile(
+                    $opts{d},
+                    File::Basename::basename($file)
+                )
             );
 
             system($exec_string);
@@ -80,8 +84,8 @@ if ($opts{o}) {
     }
 } elsif ($opts{l}) {
     @files = sort {
-        my $atime = (stat(File::Spec->catfile($opts{s}, $a)))[9];
-        my $btime = (stat(File::Spec->catfile($opts{s}, $b)))[9];
+        my $atime = (stat($a))[9];
+        my $btime = (stat($b))[9];
 
         $atime <=> $btime;
     } @files;
@@ -98,8 +102,11 @@ if ($opts{o}) {
         if (($total - $i) > $opts{l}) {
             my $exec_string = sprintf(
                 "mv \"%s\" \"%s\"",
-                File::Spec->catfile($opts{s}, $files[$i]),
-                File::Spec->catfile($opts{d}, $files[$i])
+                $files[$i],
+                File::Spec->catfile(
+                    $opts{d},
+                    File::Basename::basename($files[$i])
+                )
             );
 
             system($exec_string);
